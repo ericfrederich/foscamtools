@@ -8,3 +8,6 @@ ui_timelapse.py: timelapse.ui
 
 clean:
 	rm -f timelapse ui_timelapse.py *.pyc
+
+format:
+	gofmt -w -tabs=false -tabwidth=4 *.go
