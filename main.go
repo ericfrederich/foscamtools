@@ -4,6 +4,7 @@ import (
     "flag"
     "fmt"
     "io"
+    "io/ioutil"
     "log"
     "net/http"
     "os"
@@ -28,7 +29,11 @@ func watcher(host, user, password string, interval time.Duration) {
         if resp.StatusCode != 200 {
             val, exists := resp.Header["Content-Type"]
             if exists && val[0] == "text/html" {
-                // call log.Fatal with contents of resp.Body
+                b, err := ioutil.ReadAll(resp.Body)
+                if err != nil {
+                    panic(err)
+                }
+                log.Fatal(string(b))
             }
             log.Println("not a 200 response")
         }
