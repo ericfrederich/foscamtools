@@ -10,10 +10,11 @@ import (
     "fmt"
 )
 
-func watcher(host, user, password string){
+func watcher(host, user, password string, interval time.Duration){
     url := "http://" + host + "/snapshot.cgi"
     log.Printf("watching(\"%s\", \"%s\", \"%s\")\n", url, user, password)
-    for i:= 0 ; ; i++ {
+    i := 0
+    for _ = range time.Tick(interval) {
         req, err := http.NewRequest("GET", url, nil)
         if err != nil {
             panic(err)
@@ -32,7 +33,8 @@ func watcher(host, user, password string){
             log.Println("not a 200 response")
         }
 
-        f, err := os.Create(fmt.Sprintf("out_%05d.jpg", i))
+        fname := fmt.Sprintf("out_%05d.jpg", i)
+        f, err := os.Create(fname)
         if err != nil {
             panic(err)
         }
@@ -41,15 +43,16 @@ func watcher(host, user, password string){
         if err != nil {
             panic(err)
         }
-        log.Println("Wrote", written, "bytes")
-        time.Sleep(3 * time.Second)
+        log.Printf("Wrote %s (%d bytes)\n", fname, written)
+        i += 1
     }
 }
 
 func main() {
-    host     := flag.String("h", "ipcam_000000000000_0", "host"     )
-    user     := flag.String("u", "admin"               , "user name")
-    password := flag.String("p", "admin"               , "password" )
+    host     := flag.String  ("h", "ipcam_000000000000_0", "host"     )
+    user     := flag.String  ("u", "admin"               , "user name")
+    password := flag.String  ("p", "admin"               , "password" )
+    interval := flag.Duration("i", 24*time.Second        , "interval" )
     flag.Parse()
-    watcher(*host, *user, *password)
+    watcher(*host, *user, *password, *interval)
 }
