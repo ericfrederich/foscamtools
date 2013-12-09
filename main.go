@@ -11,16 +11,16 @@ import (
     "time"
 )
 
-func grab_picture(url, user, password, fname string){
+func grabPicture(url, user, password, fname string) error {
     req, err := http.NewRequest("GET", url, nil)
     if err != nil {
-        panic(err)
+        return err
     }
     req.SetBasicAuth(user, password)
 
     resp, err := http.DefaultClient.Do(req)
     if err != nil {
-        panic(err)
+        return err
     }
     defer resp.Body.Close()
     if resp.StatusCode != 200 {
@@ -28,7 +28,7 @@ func grab_picture(url, user, password, fname string){
         if exists && val[0] == "text/html" {
             b, err := ioutil.ReadAll(resp.Body)
             if err != nil {
-                panic(err)
+                return err
             }
             log.Fatal(string(b))
         }
@@ -37,17 +37,18 @@ func grab_picture(url, user, password, fname string){
 
     f, err := os.Create(fname)
     if err != nil {
-        panic(err)
+        return err
     }
 
     written, err := io.Copy(f, resp.Body)
     if err != nil {
-        panic(err)
+        return err
     }
     log.Printf("Wrote %s (%d bytes)\n", fname, written)
+    return nil
 }
 
-func watcher(host, user, password string, interval, duration time.Duration) {
+func watcher(host, user, password string, interval, duration time.Duration) error {
 
     url := "http://" + host + "/snapshot.cgi"
     log.Printf("watching(\"%s\", \"%s\", \"%s\")\n", url, user, password)
@@ -59,10 +60,13 @@ func watcher(host, user, password string, interval, duration time.Duration) {
         select{
         case <-ticker:
             fname := fmt.Sprintf("out_%05d.jpg", i)
-            grab_picture(url, user, password, fname)
+            err := grabPicture(url, user, password, fname)
+            if err != nil{
+                return err
+            }
             i += 1
         case <-done:
-            return
+            return nil
         }
     }
 }
@@ -74,5 +78,8 @@ func main() {
     interval := flag.Duration("i", 24*time.Second, "interval")
     duration := flag.Duration("d", 12*time.Hour  , "duration")
     flag.Parse()
-    watcher(*host, *user, *password, *interval, *duration)
+    err := watcher(*host, *user, *password, *interval, *duration)
+    if err != nil{
+        log.Fatal(err)
+    }
 }
