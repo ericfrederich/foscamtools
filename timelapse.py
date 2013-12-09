@@ -18,17 +18,14 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(float)
     def on_sleepSpin_valueChanged(self, v):
-        print 'hi s', v
         self.do_calc()
 
     @pyqtSlot(float)
     def on_intervalSpin_valueChanged(self, v):
-        print 'hi i', v
         self.do_calc()
 
     @pyqtSlot(int)
     def on_framesSpin_valueChanged(self, v):
-        print 'hi f', v
         self.do_calc()
 
     def do_calc(self):
