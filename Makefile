@@ -1,7 +1,7 @@
 all: timelapse ui_timelapse.py
 
-timelapse: main.go
-	go build
+timelapse: timelapse.go
+	go build timelapse.go
 
 ui_timelapse.py: timelapse.ui
 	pyuic4 -x -o ui_timelapse.py timelapse.ui
